@@ -1,3 +1,4 @@
+import os
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -22,8 +23,10 @@ class BaseDPTSegmentation(nn.Module):
         self.patch_size = 16
         self.encoder_name = encoder_name
         
-        self.encoder = AutoModel.from_pretrained(encoder_name)
-        self.processor = AutoImageProcessor.from_pretrained(encoder_name)
+        # Load from bundled DINOv3 config to avoid gated repo access
+        config_dir = os.path.join(os.path.dirname(__file__), 'dinov3_config')
+        self.encoder = AutoModel.from_pretrained(config_dir)
+        self.processor = AutoImageProcessor.from_pretrained(config_dir)
         
         self.intermediate_layer_idx = {
             'facebook/dinov3-vitb16-pretrain-lvd1689m': [2, 5, 8, 11],

@@ -1,4 +1,5 @@
 from typing import List, Optional
+import os
 
 import torch
 import torch.nn as nn
@@ -12,7 +13,7 @@ class BaseDPTSegmentation(nn.Module):
     def __init__(self,
                  num_classes,
                  num_outputs: int = 3,
-                 encoder_name: str = 'facebook/dinov3-vitb16-pretrain-lvd1689m',
+                 encoder_name: str = 'dinov3_base',
                  features: int = 256,
                  out_channels: Optional[List[int]] = None,
                  use_bn: bool = True,
@@ -23,13 +24,15 @@ class BaseDPTSegmentation(nn.Module):
         self.patch_size = 16
         self.encoder_name = encoder_name
         
-        self.encoder = AutoModel.from_pretrained(encoder_name)
-        self.processor = AutoImageProcessor.from_pretrained(encoder_name)
+        # Load from bundled DINOv3 config to avoid gated repo access
+        config_dir = os.path.join(os.path.dirname(__file__), 'dinov3_config')
+        self.encoder = AutoModel.from_pretrained(config_dir)
+        self.processor = AutoImageProcessor.from_pretrained(config_dir)
         
         self.intermediate_layer_idx = {
-            'facebook/dinov3-vitb16-pretrain-lvd1689m': [2, 5, 8, 11],
-            'facebook/dinov3-vits16-pretrain-lvd1689m': [2, 5, 8, 11], 
-            'facebook/dinov3-vitl16-pretrain-lvd1689m': [4, 11, 17, 23],
+            'dinov3_base': [2, 5, 8, 11],
+            'dinov3_small': [2, 5, 8, 11], 
+            'dinov3_large': [4, 11, 17, 23],
         }
         
         dim = self.encoder.config.hidden_size

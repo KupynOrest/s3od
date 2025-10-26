@@ -67,7 +67,7 @@ class BackgroundRemoval:
         model = DPTSegmentation(
             num_classes=1,
             num_outputs=3,
-            encoder_name='facebook/dinov3-vitb16-pretrain-lvd1689m',
+            encoder_name='dinov3_base',
             features=256,
             use_bn=True,
             use_clstoken=False
