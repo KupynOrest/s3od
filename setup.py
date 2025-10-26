@@ -1,24 +1,22 @@
 from setuptools import setup, find_packages
+import os
 
 with open("README.md", "r", encoding="utf-8") as fh:
     long_description = fh.read()
 
-with open("synth_sod/requirements.txt", "r", encoding="utf-8") as fh:
-    requirements = [line.strip() for line in fh if line.strip() and not line.startswith("#")]
-
 setup(
-    name="synth-sod",
+    name="s3od",
     version="0.1.0",
     author="S3OD Team",
-    description="S3OD: Synthetic Salient Object Detection - Research codebase",
+    description="Simple and efficient background removal using S3OD",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/organization/s3od",
-    packages=find_packages(where="synth_sod"),
-    package_dir={"": "synth_sod"},
+    url="https://github.com/KupynOrest/s3od",
+    packages=find_packages(where="s3od"),
+    package_dir={"": "s3od"},
     classifiers=[
         "Development Status :: 3 - Alpha",
-        "Intended Audience :: Science/Research",
+        "Intended Audience :: Developers",
         "Topic :: Scientific/Engineering :: Artificial Intelligence",
         "License :: OSI Approved :: MIT License",
         "Programming Language :: Python :: 3",
@@ -28,7 +26,15 @@ setup(
         "Programming Language :: Python :: 3.11",
     ],
     python_requires=">=3.8",
-    install_requires=requirements,
+    install_requires=[
+        "torch>=2.0.0",
+        "torchvision>=0.15.0",
+        "transformers>=4.30.0",
+        "numpy>=1.20.0",
+        "Pillow>=9.0.0",
+        "opencv-python>=4.5.0",
+        "huggingface-hub>=0.16.0",
+    ],
     extras_require={
         "dev": [
             "pytest>=7.0.0",

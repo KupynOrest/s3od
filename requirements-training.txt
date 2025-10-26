@@ -1,0 +1,9 @@
+# Training requirements for S3OD
+# Install with: pip install -r requirements-training.txt
+
+# Core inference package
+-e .
+
+# Training dependencies
+-r synth_sod/requirements.txt
+

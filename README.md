@@ -68,25 +68,19 @@ Each sample in the dataset contains:
 
 ## Installation
 
-#### Create a Conda virtual environment
+### For Inference Only
 
+**From GitHub:**
 ```bash
-conda create --name s3od python=3.10
-conda activate s3od
+pip install git+https://github.com/KupynOrest/s3od.git
 ```
 
-#### Install the inference package
+### For Training & Research
 
 ```bash
-pip install s3od
-```
-
-#### Or clone for training/research
-
-```bash
-git clone https://github.com/organization/s3od.git
+git clone https://github.com/KupynOrest/s3od.git
 cd s3od
-pip install -e ./
+pip install -r requirements-training.txt
 ```
 
 ## Usage
