@@ -1,6 +1,6 @@
 <div align="center">
 
-# S3OD: Synthetic Salient Object Detection
+# S3OD: Towards Generalizable Salient Object Detection with Synthetic Data
 
 [**Orest Kupyn**](https://github.com/KupynOrest)<sup>1</sup> · [**Hirokatsu Kataoka**](https://hirokatsukataoka.net/)<sup>12</sup> · [**Christian Rupprecht**](https://chrirupp.github.io/)<sup>1</sup> ·
 
