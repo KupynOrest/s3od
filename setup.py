@@ -14,6 +14,10 @@ setup(
     url="https://github.com/KupynOrest/s3od",
     packages=find_packages(where="s3od"),
     package_dir={"": "s3od"},
+    package_data={
+        "s3od": ["dinov3_config/*.json"],
+    },
+    include_package_data=True,
     classifiers=[
         "Development Status :: 3 - Alpha",
         "Intended Audience :: Developers",

@@ -1,0 +1,4 @@
+include README.md
+include LICENSE
+recursive-include s3od/s3od/dinov3_config *.json
+

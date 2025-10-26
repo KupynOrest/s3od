@@ -24,7 +24,6 @@ class BaseDPTSegmentation(nn.Module):
         self.patch_size = 16
         self.encoder_name = encoder_name
         
-        # Load from bundled DINOv3 config to avoid gated repo access
         config_dir = os.path.join(os.path.dirname(__file__), 'dinov3_config')
         config = AutoConfig.from_pretrained(config_dir, local_files_only=True)
         self.encoder = AutoModel.from_config(config)
