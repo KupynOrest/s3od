@@ -1,0 +1,6 @@
+seed: 42
+precision: 32
+accelerator: "auto"
+devices: 4
+max_epochs: 200
+accumulate_grad_batches: 32

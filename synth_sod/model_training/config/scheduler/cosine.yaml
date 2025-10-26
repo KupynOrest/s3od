@@ -1,0 +1,10 @@
+schedulers:
+  - _target_: torch.optim.lr_scheduler.LinearLR
+    start_factor: 1.0
+    end_factor: 1.0
+    total_iters: 30
+  - _target_: torch.optim.lr_scheduler.CosineAnnealingLR
+    T_max: ${eval:'${backend.max_epochs} - 30'}
+    eta_min: 1e-6
+milestones:
+  - 30

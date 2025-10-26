@@ -1,0 +1,11 @@
+# Configuration for generating images and masks
+model_path: "path/to/flux/model"
+lora_path: null
+teacher_checkpoint_path: "path/to/teacher/checkpoint.ckpt"
+class_names_path: "imagenet_classes.json"
+save_path: "path/to/save/generated/data"
+num_inference_steps: 28
+num_prompts: 20
+class_weights_path: null  # Optional: path/to/class/weights.json
+max_tasks: 12
+use_all_existing_prompts: true

@@ -1,0 +1,21 @@
+datasets:
+  - ${data_dir}/data/Train_Dataset/SynthSODDataFiltered
+  - ${data_dir}/data/Train_Dataset/SynthSODDataFiltered1509
+  - ${data_dir}/data/Train_Dataset/SynthSODDataFiltered1709
+  - ${data_dir}/data/Train_Dataset/SynthSODStage30902
+train_batch_size: 4
+val_batch_size: 4
+num_workers: 8
+image_size: 1024
+val_split: 0.1
+transform_mode: synthetic
+test_datasets:
+  - "HRSOD-TE"
+  - "UHRSD-TE"
+  - "DIS-TE1"
+  - "DIS-TE2"
+  - "DIS-TE3"
+  - "DIS-TE4"
+  - "DIS-VD"
+  - "DAVIS-S"
+  - "DUTS-TE"

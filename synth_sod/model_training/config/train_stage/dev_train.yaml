@@ -1,0 +1,17 @@
+save_dir: ${base_dir}/checkpoints
+log_dir: ${base_dir}/logs
+max_images: 8
+enable_image_logging: false
+experiment_name: "test_sod"
+checkpoint_path:
+weights_only: false
+evaluation:
+  input_dir: ${data_dir}/data/Test_Dataset
+  enabled: true
+  image_size: 1024
+  datasets: ${dataset.test_datasets}
+early_stopping:
+    monitor: 'val_iou_loss_full_epoch'
+    min_delta: 1e-4
+    patience: 50
+    mode: 'min'

@@ -1,0 +1,35 @@
+criterions:
+  - name: bce_loss
+    target_key: masks
+    output_key: pred_masks
+    weight: 30
+    loss:
+      _target_: torch.nn.BCELoss
+      reduction: none
+
+  - name: iou_loss
+    target_key: masks
+    output_key: pred_masks
+    weight: 0.5
+    loss:
+      _target_: model_training.loss.IoULoss
+      smooth: 1e-6
+      reduction: none
+
+  - name: ssim_loss
+    target_key: masks
+    output_key: pred_masks
+    weight: 10
+    loss:
+      _target_: model_training.loss.SSIMLoss
+      reduction: none
+
+  - name: mse_ious_loss
+    target_key: gt_ious
+    output_key: pred_iou
+    weight: 0.05
+    loss:
+      _target_: torch.nn.MSELoss
+
+full_mask_lambda: 0.1
+decay_rate: 0.2

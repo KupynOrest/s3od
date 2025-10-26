@@ -1,0 +1,17 @@
+# @package _global_
+
+hydra:
+  run:
+    dir: ./experiments/train/${now:%Y-%m-%d-%H-%M-%S}
+
+base_dir: "path/to/project"
+data_dir: "path/to/datasets"
+
+defaults:
+  - backend: 1gpu
+  - dataset: duts
+  - loss: focal_iou
+  - model: dinob
+  - optimizer: adamw
+  - scheduler: cosine
+  - train_stage: dev_train

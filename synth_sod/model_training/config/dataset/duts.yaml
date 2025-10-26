@@ -1,0 +1,14 @@
+datasets:
+  - ${data_dir}/data/Train_Dataset/DUTS-TR
+train_batch_size: 8
+val_batch_size: 16
+num_workers: 4
+image_size: 224
+val_split: 0.1
+transform_mode: regular
+test_datasets:
+  - "ECSSD"
+  - "DUTS-TE"
+  - "HKU-IS"
+  - "DUT-OMRON"
+  - "HRSOD-TE"

@@ -1,0 +1,8 @@
+seed: 42
+precision: 32
+accelerator: "auto"
+devices: 2
+max_epochs: 200
+accumulate_grad_batches: 32
+profiler_enabled: true
+strategy: 'ddp_find_unused_parameters_true'

@@ -1,0 +1,19 @@
+datasets:
+  - ${data_dir}/data/Train_Dataset/DUTS-TR
+  - ${data_dir}/data/Train_Dataset/HRSOD-TR
+  - ${data_dir}/data/Train_Dataset/UHRSD-TR
+  - ${data_dir}/data/Train_Dataset/DIS-TR
+train_batch_size: 1
+val_batch_size: 1
+num_workers: 4
+image_size: 1024
+val_split: 0.1
+transform_mode: test
+flux_features_dir: path/to/flux/features
+feature_layers: [0, 1, 2, 3]
+test_datasets:
+  - "ECSSD"
+  - "DUTS-TE"
+  - "HKU-IS"
+  - "DUT-OMRON"
+  - "HRSOD-TE"

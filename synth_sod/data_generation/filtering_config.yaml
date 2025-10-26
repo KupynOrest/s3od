@@ -1,0 +1,27 @@
+# @package _global_
+
+input_path: "path/to/input/data"
+output_path: "path/to/output/data"
+max_samples_per_class: null
+max_tasks: 12
+log_level: "INFO"
+save_fail_cases: false
+
+filters:
+  - _target_: data_generation.filters.HorizontalFlipConsistencyFilter
+    name: "flip_consistency"
+    model_path: "path/to/consistency/model/checkpoint.ckpt"
+    iou_threshold: 0.6
+    device: "cuda"
+
+  - _target_: data_generation.filters.GemmaSemanticFilter
+    name: "semantic_quality"
+    model_id: "google/gemma-3-4b-it"
+    confidence_threshold: 0.7
+    target_size: 672
+
+  - _target_: data_generation.filters.GemmaMaskArtifactFilter
+    name: "mask_artifacts"
+    model_id: "google/gemma-3-4b-it"
+    confidence_threshold: 0.7
+    target_size: 672

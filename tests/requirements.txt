@@ -1,0 +1,5 @@
+pytest>=7.0.0
+pytest-cov>=4.0.0
+numpy>=1.20.0
+Pillow>=9.0.0
+
