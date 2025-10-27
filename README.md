@@ -6,7 +6,7 @@
 
 <sup>1</sup>University of Oxford · <sup>2</sup>AIST, Japan
 
-<a href='#'><img src='https://img.shields.io/badge/arXiv-Coming Soon-red'></a>
+<a href='https://arxiv.org/abs/2510.21605'><img src='https://img.shields.io/badge/arXiv-2510.21605-b31b1b.svg'></a>
 <a href='https://huggingface.co/okupyn/s3od'><img src='https://img.shields.io/badge/%F0%9F%A4%97%20Model-blue'></a>
 <a href='https://huggingface.co/datasets/okupyn/s3od_dataset'><img src='https://img.shields.io/badge/%F0%9F%A4%97%20Dataset-blue'></a>
 [![PyPI](https://img.shields.io/badge/PyPI-s3od-blue)](https://pypi.org/project/s3od/)
@@ -23,7 +23,7 @@
 
 ## S3OD Dataset Download Instructions
 
-The S3OD dataset contains 140K+ synthetic images with high-quality masks for salient object detection.
+The S3OD dataset contains 140K synthetic images with high-quality masks for salient object detection.
 
 ### Using HuggingFace Datasets Library (Recommended)
 
@@ -41,7 +41,7 @@ for sample in dataset:
     mask = sample["mask"]        # PIL Image (mask)
     caption = sample["caption"]  # str
     category = sample["category"]# str
-    image_id = sample["id"]      # str
+    image_id = sample["image_id"]      # str
 
 # Or access specific samples
 sample = dataset[0]
@@ -64,7 +64,7 @@ Each sample in the dataset contains:
 - `mask`: Binary segmentation mask (PIL Image)
 - `caption`: Descriptive caption generated for the image
 - `category`: Object category from ImageNet
-- `id`: Unique image identifier
+- `image_id`: Unique image identifier
 
 ## Installation
 
@@ -106,6 +106,39 @@ best_mask = result.predicted_mask  # Best mask (H, W) numpy array
 all_masks = result.all_masks       # All masks (N, H, W) numpy array  
 all_ious = result.all_ious         # IoU scores (N,) numpy array
 ```
+
+### Model Variants
+
+We provide multiple model variants optimized for different use cases:
+
+| Model | Training Data | Best For | HuggingFace |
+|-------|--------------|----------|-------------|
+| **okupyn/s3od** (default) | Synthetic + All Real Datasets | General-purpose background removal, best overall performance | [🤗 Hub](https://huggingface.co/okupyn/s3od) |
+| **okupyn/s3od-synth** | Synthetic Only | Research on synthetic-to-real transfer, zero-shot evaluation | [🤗 Hub](https://huggingface.co/okupyn/s3od-synth) |
+| **okupyn/s3od-dis** | Synthetic + DIS5K | High-precision dichotomous segmentation | [🤗 Hub](https://huggingface.co/okupyn/s3od-dis) |
+| **okupyn/s3od-sod** | Synthetic + SOD Datasets | Salient object detection tasks | [🤗 Hub](https://huggingface.co/okupyn/s3od-sod) |
+
+**Usage with different models:**
+
+```python
+# Default model (best general performance)
+detector = BackgroundRemoval(model_id="okupyn/s3od")
+
+# Synthetic-only model (pure zero-shot)
+detector_synth = BackgroundRemoval(model_id="okupyn/s3od-synth")
+
+# DIS-specialized model (high precision)
+detector_dis = BackgroundRemoval(model_id="okupyn/s3od-dis")
+
+# SOD-specialized model
+detector_sod = BackgroundRemoval(model_id="okupyn/s3od-sod")
+```
+
+**Key Differences:**
+- **okupyn/s3od**: Trained on 140K synthetic images + fine-tuned on DUTS, DIS5K, HR-SOD and others. Best for production use.
+- **okupyn/s3od-synth**: Trained exclusively on synthetic data. Demonstrates strong zero-shot generalization.
+- **okupyn/s3od-dis**: Fine-tuned specifically for dichotomous image segmentation with highly accurate boundaries - use for evaluation on academic benchmarks.
+- **okupyn/s3od-sod**: Optimized for general salient object detection benchmarks - use for evaluation on academic benchmarks.
 
 ## Demo
 
@@ -223,15 +256,15 @@ python run_filtering.py --config_path filtering_config.yaml
 
 Update configuration files with your paths before running. See example configs in `synth_sod/data_generation/`.
 
-## Cite
+## Citation
 
 If you use S3OD in your research, please cite:
 
 ```bibtex
-@article{s3od2025,
-  title={S3OD: Synthetic Salient Object Detection},
-  author={Kataoka, Hirokatsu and Kupyn, Orest and others},
-  journal={arXiv preprint arXiv:XXXX.XXXXX},
+@article{kupyn2025s3od,
+  title={S3OD: Towards Generalizable Salient Object Detection with Synthetic Data},
+  author={Kupyn, Orest and Kataoka, Hirokatsu and Rupprecht, Christian},
+  journal={arXiv preprint arXiv:2510.21605},
   year={2025}
 }
 ```

@@ -126,8 +126,9 @@ class BackgroundRemoval:
         best_idx = pred_ious.argmax()
         predicted_mask = all_masks_resized[best_idx]
         
-        binary_mask = (predicted_mask > threshold).astype(np.uint8) * 255
-        rgba = np.dstack([image, binary_mask])
+        # Use soft mask for smooth alpha channel (convert 0-1 float to 0-255 uint8)
+        alpha_channel = (predicted_mask * 255).astype(np.uint8)
+        rgba = np.dstack([image, alpha_channel])
         rgba_image = Image.fromarray(rgba, mode='RGBA')
         
         return RemovalResult(

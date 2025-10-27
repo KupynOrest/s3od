@@ -13,12 +13,14 @@ def visualize_removal(
     if isinstance(image, Image.Image):
         image = np.array(image.convert('RGB'))
     
-    mask = (result.predicted_mask > 0.5).astype(np.uint8)
+    # Use soft mask (0-1 range) for smooth edges, like BiRefNet
+    mask = result.predicted_mask[..., None]  # Add channel dimension
     
     background = np.full_like(image, background_color, dtype=np.uint8)
-    composite = image * mask[..., None] + background * (1 - mask[..., None])
+    # Blend using soft mask for smooth transitions
+    composite = (mask * image + (1 - mask) * background).astype(np.uint8)
     
-    return Image.fromarray(composite.astype(np.uint8))
+    return Image.fromarray(composite)
 
 
 def visualize_all_masks(
