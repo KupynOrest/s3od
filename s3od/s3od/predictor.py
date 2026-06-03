@@ -73,31 +73,39 @@ class BackgroundRemoval:
             use_clstoken=False
         )
         
-        model.load_state_dict(checkpoint['state_dict'])
+        state_dict = checkpoint['state_dict']
+        state_dict = self._remap_state_dict(state_dict, model)
+        model.load_state_dict(state_dict)
         return model
+    
+    @staticmethod
+    def _remap_state_dict(state_dict: dict, model: torch.nn.Module) -> dict:
+        model_keys = set(model.state_dict().keys())
+        if not (model_keys - set(state_dict.keys())):
+            return state_dict
+        remapped = {}
+        for k, v in state_dict.items():
+            new_k = k
+            if k.startswith("encoder.layer.") and f"encoder.model.{k[len('encoder.'):]}" in model_keys:
+                new_k = f"encoder.model.{k[len('encoder.'):]}"
+            remapped[new_k] = v
+        return remapped
     
     def _preprocess(self, image: np.ndarray) -> Tuple[torch.Tensor, Dict[str, Any]]:
         pad_info = get_pad_info(image, self.image_size)
-        resized = cv2.resize(image, pad_info['resized_size'][::-1])
-        
+        resized = cv2.resize(image, pad_info['resized_size'][::-1], interpolation=cv2.INTER_LINEAR)
+        rh, rw = resized.shape[:2]
+        h_pad, w_pad = pad_info['height_pad'], pad_info['width_pad']
         padded = np.zeros((self.image_size, self.image_size, 3), dtype=np.uint8)
-        if pad_info['height_pad'] > 0:
-            padded[pad_info['height_pad']:-pad_info['height_pad'], :] = resized
-        elif pad_info['width_pad'] > 0:
-            padded[:, pad_info['width_pad']:-pad_info['width_pad']] = resized
-        else:
-            padded = resized
-        
+        padded[h_pad:h_pad + rh, w_pad:w_pad + rw] = resized
         normalized = (padded.astype(np.float32) / 255.0 - self.mean) / self.std
         tensor = torch.from_numpy(normalized).permute(2, 0, 1).unsqueeze(0).float()
-        
         return tensor, pad_info
     
     @torch.no_grad()
     def remove_background(
         self,
         image: Union[np.ndarray, Image.Image],
-        threshold: float = 0.5
     ) -> RemovalResult:
         if isinstance(image, Image.Image):
             image_pil = image.convert('RGB')

@@ -7,6 +7,7 @@
 <sup>1</sup>University of Oxford · <sup>2</sup>AIST, Japan
 
 <a href='https://arxiv.org/abs/2510.21605'><img src='https://img.shields.io/badge/arXiv-2510.21605-b31b1b.svg'></a>
+<a href='https://iclr.cc/'><img src='https://img.shields.io/badge/ICLR-2026-blue'></a>
 <a href='https://huggingface.co/okupyn/s3od'><img src='https://img.shields.io/badge/%F0%9F%A4%97%20Model-blue'></a>
 <a href='https://huggingface.co/datasets/okupyn/s3od_dataset'><img src='https://img.shields.io/badge/%F0%9F%A4%97%20Dataset-blue'></a>
 [![PyPI](https://img.shields.io/badge/PyPI-s3od-blue)](https://pypi.org/project/s3od/)
@@ -19,6 +20,8 @@
 ![banner](./images/banner.png)
 
 ## News
+- [2026/06/03] Added evaluation script (`eval.py`) and `s3od-cod` model variant for camouflaged object detection!
+- [2026/03/03] 🎉 Paper accepted to ICLR 2026!
 - [2025/10/26] 🔥 Release Version 0.1.0 - Training code, synthetic dataset, and inference package!
 
 ## S3OD Dataset Download Instructions
@@ -107,16 +110,46 @@ all_masks = result.all_masks       # All masks (N, H, W) numpy array
 all_ious = result.all_ious         # IoU scores (N,) numpy array
 ```
 
+### Evaluation
+
+To reproduce benchmark results, use `eval.py` with the appropriate model and dataset group:
+
+```bash
+# Evaluate on COD benchmarks (CAMO-TE, NC4K, COD10K-TE)
+python eval.py --model_id okupyn/s3od-cod --data_dir /path/to/datasets --datasets cod
+
+# Evaluate on DIS benchmarks
+python eval.py --model_id okupyn/s3od-dis --data_dir /path/to/datasets --datasets dis
+
+# Evaluate on SOD benchmarks
+python eval.py --model_id okupyn/s3od-sod --data_dir /path/to/datasets --datasets sod
+
+# Evaluate on all benchmarks
+python eval.py --model_id okupyn/s3od-synth --data_dir /path/to/datasets --datasets all
+```
+
+**Model ↔ Dataset mapping:**
+
+| Model | `--datasets` |
+|-------|-------------|
+| `okupyn/s3od-cod` | `cod` |
+| `okupyn/s3od-dis` | `dis` |
+| `okupyn/s3od-sod` | `sod` |
+| `okupyn/s3od-synth` | `all` |
+
 ### Model Variants
 
 We provide multiple model variants optimized for different use cases:
 
 | Model | Training Data | Best For | HuggingFace |
 |-------|--------------|----------|-------------|
-| **okupyn/s3od** (default) | Synthetic + All Real Datasets | General-purpose background removal, best overall performance | [🤗 Hub](https://huggingface.co/okupyn/s3od) |
-| **okupyn/s3od-synth** | Synthetic Only | Research on synthetic-to-real transfer, zero-shot evaluation | [🤗 Hub](https://huggingface.co/okupyn/s3od-synth) |
-| **okupyn/s3od-dis** | Synthetic + DIS5K | High-precision dichotomous segmentation | [🤗 Hub](https://huggingface.co/okupyn/s3od-dis) |
-| **okupyn/s3od-sod** | Synthetic + SOD Datasets | Salient object detection tasks | [🤗 Hub](https://huggingface.co/okupyn/s3od-sod) |
+| **okupyn/s3od** (default) | Synthetic + All Real Datasets | General-purpose background removal and production use | [🤗 Hub](https://huggingface.co/okupyn/s3od) |
+| **okupyn/s3od-synth** | Synthetic Only | Research on synthetic-to-real transfer, zero-shot evaluation, **benchmark metrics** | [🤗 Hub](https://huggingface.co/okupyn/s3od-synth) |
+| **okupyn/s3od-dis** | Synthetic + DIS5K | High-precision dichotomous segmentation, **DIS benchmark metrics** | [🤗 Hub](https://huggingface.co/okupyn/s3od-dis) |
+| **okupyn/s3od-sod** | Synthetic + SOD Datasets | Salient object detection tasks, **SOD benchmark metrics** | [🤗 Hub](https://huggingface.co/okupyn/s3od-sod) |
+| **okupyn/s3od-cod** | Synthetic + COD Datasets | Camouflaged object detection, **COD benchmark metrics** | [🤗 Hub](https://huggingface.co/okupyn/s3od-cod) |
+
+> **Note:** The default `okupyn/s3od` model is trained on all academic benchmarks and optimized for general-purpose usage. For computing metrics on specific academic benchmarks use the specialized variants.
 
 **Usage with different models:**
 
@@ -132,13 +165,17 @@ detector_dis = BackgroundRemoval(model_id="okupyn/s3od-dis")
 
 # SOD-specialized model
 detector_sod = BackgroundRemoval(model_id="okupyn/s3od-sod")
+
+# COD-specialized model
+detector_cod = BackgroundRemoval(model_id="okupyn/s3od-cod")
 ```
 
 **Key Differences:**
-- **okupyn/s3od**: Trained on 140K synthetic images + fine-tuned on DUTS, DIS5K, HR-SOD and others. Best for production use.
-- **okupyn/s3od-synth**: Trained exclusively on synthetic data. Demonstrates strong zero-shot generalization.
-- **okupyn/s3od-dis**: Fine-tuned specifically for dichotomous image segmentation with highly accurate boundaries - use for evaluation on academic benchmarks.
-- **okupyn/s3od-sod**: Optimized for general salient object detection benchmarks - use for evaluation on academic benchmarks.
+- **okupyn/s3od**: Trained on 140K synthetic images + fine-tuned on DUTS, DIS5K, HR-SOD and others. Best for production use and general-purpose applications.
+- **okupyn/s3od-synth**: Trained exclusively on synthetic data. Use for zero-shot evaluation and computing benchmark metrics.
+- **okupyn/s3od-dis**: Fine-tuned specifically on DIS5K for dichotomous image segmentation with highly accurate boundaries. Use for computing metrics on DIS-related benchmarks.
+- **okupyn/s3od-sod**: Optimized for salient object detection datasets (DUTS, HR-SOD, etc.). Use for computing metrics on SOD-related benchmarks.
+- **okupyn/s3od-cod**: Fine-tuned on camouflaged object detection datasets (CAMO, NC4K, COD10K). Use for computing metrics on COD benchmarks.
 
 ## Demo
 
@@ -261,11 +298,11 @@ Update configuration files with your paths before running. See example configs i
 If you use S3OD in your research, please cite:
 
 ```bibtex
-@article{kupyn2025s3od,
+@inproceedings{kupyn2026s3od,
   title={S3OD: Towards Generalizable Salient Object Detection with Synthetic Data},
   author={Kupyn, Orest and Kataoka, Hirokatsu and Rupprecht, Christian},
-  journal={arXiv preprint arXiv:2510.21605},
-  year={2025}
+  booktitle={International Conference on Learning Representations (ICLR)},
+  year={2026}
 }
 ```
 

@@ -363,10 +363,12 @@ class SODPredictor:
             pad_info: dict
     ) -> torch.Tensor:
         """Remove padding from predicted masks."""
-        if pad_info['height_pad'] > 0:
-            masks = masks[:, pad_info['height_pad']:-pad_info['height_pad'], :]
-        if pad_info['width_pad'] > 0:
-            masks = masks[:, :, pad_info['width_pad']:-pad_info['width_pad']]
+        rh, rw = pad_info['resized_size']
+        h_pad, w_pad = pad_info['height_pad'], pad_info['width_pad']
+        if h_pad > 0:
+            masks = masks[:, h_pad:h_pad + rh, :]
+        if w_pad > 0:
+            masks = masks[:, :, w_pad:w_pad + rw]
         return masks
 
     @torch.no_grad()

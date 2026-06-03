@@ -51,24 +51,18 @@ def process_dataset(data_dir: str, predictor: SODPredictor, compute_best_metrics
         
         gt_mask_path = find_gt_mask_path(image_path, data_dir)
         if gt_mask_path and os.path.exists(gt_mask_path):
-            gt_mask = cv2.imread(gt_mask_path, cv2.IMREAD_GRAYSCALE) > 128
-            gt_mask = gt_mask.astype(float)
-            gt_mask_tensor = torch.tensor(gt_mask).to('cuda')
+            gt_mask = (cv2.imread(gt_mask_path, cv2.IMREAD_GRAYSCALE) > 128).astype(np.float32)
+            gt_mask_tensor = torch.from_numpy(gt_mask).to('cuda')
             
-            # Evaluate predicted (best) mask
-            soft_mask = result.soft_mask
-            metric_counter.step(torch.tensor(soft_mask).to('cuda'), gt_mask_tensor)
+            soft_mask = result.soft_mask.astype(np.float32)
+            metric_counter.step(torch.from_numpy(soft_mask).to('cuda'), gt_mask_tensor.clone())
             
-            # Evaluate all masks if requested and available
             if compute_best_metrics and result.has_multiple_masks:
                 best_iou = -1
                 best_mask = None
                 
-                # Try all masks and find the one with best IoU with ground truth
                 for i in range(result.num_masks):
-                    mask = result.all_masks[i]  # Binary mask [H, W]
-                    
-                    # Calculate IoU
+                    mask = result.all_masks[i]
                     mask_bool = mask > 0.5
                     gt_bool = gt_mask > 0.5
                     intersection = np.logical_and(mask_bool, gt_bool).sum()
@@ -79,15 +73,10 @@ def process_dataset(data_dir: str, predictor: SODPredictor, compute_best_metrics
                         best_iou = iou
                         best_mask = mask
                 
-                # Use the best mask for metrics (convert to soft mask approximation)
-                if best_mask is not None:
-                    best_metric_counter.step(torch.tensor(best_mask).to('cuda'), gt_mask_tensor)
-                else:
-                    # Fallback to predicted mask
-                    best_metric_counter.step(torch.tensor(soft_mask).to('cuda'), gt_mask_tensor)
+                oracle = best_mask if best_mask is not None else soft_mask
+                best_metric_counter.step(torch.from_numpy(oracle.astype(np.float32)).to('cuda'), gt_mask_tensor.clone())
             elif compute_best_metrics:
-                # Single mask case - use the same mask for both metrics
-                best_metric_counter.step(torch.tensor(soft_mask).to('cuda'), gt_mask_tensor)
+                best_metric_counter.step(torch.from_numpy(soft_mask).to('cuda'), gt_mask_tensor.clone())
         else:
             print(f"Warning: GT mask not found for {image_path}")
     
@@ -124,24 +113,18 @@ def process_dataset_teacher(data_dir: str, dataset: str, predictor: SODTeacherPr
         
         gt_mask_path = find_gt_mask_path(image_path, data_dir)
         if gt_mask_path and os.path.exists(gt_mask_path):
-            gt_mask = cv2.imread(gt_mask_path, cv2.IMREAD_GRAYSCALE) > 128
-            gt_mask = gt_mask.astype(float)
-            gt_mask_tensor = torch.tensor(gt_mask).to('cuda')
+            gt_mask = (cv2.imread(gt_mask_path, cv2.IMREAD_GRAYSCALE) > 128).astype(np.float32)
+            gt_mask_tensor = torch.from_numpy(gt_mask).to('cuda')
             
-            # Evaluate predicted (best) mask
-            soft_mask = result.soft_mask
-            metric_counter.step(torch.tensor(soft_mask).to('cuda'), gt_mask_tensor)
+            soft_mask = result.soft_mask.astype(np.float32)
+            metric_counter.step(torch.from_numpy(soft_mask).to('cuda'), gt_mask_tensor.clone())
             
-            # Evaluate all masks if requested and available
             if compute_best_metrics and result.has_multiple_masks:
                 best_iou = -1
                 best_mask = None
                 
-                # Try all masks and find the one with best IoU with ground truth
                 for i in range(result.num_masks):
-                    mask = result.all_masks[i]  # Binary mask [H, W]
-                    
-                    # Calculate IoU
+                    mask = result.all_masks[i]
                     mask_bool = mask > 0.5
                     gt_bool = gt_mask > 0.5
                     intersection = np.logical_and(mask_bool, gt_bool).sum()
@@ -152,15 +135,10 @@ def process_dataset_teacher(data_dir: str, dataset: str, predictor: SODTeacherPr
                         best_iou = iou
                         best_mask = mask
                 
-                # Use the best mask for metrics (convert to soft mask approximation)
-                if best_mask is not None:
-                    best_metric_counter.step(torch.tensor(best_mask).to('cuda'), gt_mask_tensor)
-                else:
-                    # Fallback to predicted mask
-                    best_metric_counter.step(torch.tensor(soft_mask).to('cuda'), gt_mask_tensor)
+                oracle = best_mask if best_mask is not None else soft_mask
+                best_metric_counter.step(torch.from_numpy(oracle.astype(np.float32)).to('cuda'), gt_mask_tensor.clone())
             elif compute_best_metrics:
-                # Single mask case - use the same mask for both metrics
-                best_metric_counter.step(torch.tensor(soft_mask).to('cuda'), gt_mask_tensor)
+                best_metric_counter.step(torch.from_numpy(soft_mask).to('cuda'), gt_mask_tensor.clone())
             
             processed_count += 1
         else:
@@ -213,10 +191,10 @@ def main(
     model_path: str, 
     model_type: str = 'student',
     metadata_dir: Optional[str] = None,
-    img_size: int = 224, 
+    img_size: int = 1024,
     datasets: str = 'all',
+    flux_model_path: str = '',
     compute_best_metrics: bool = False,
-    flux_model_path: str
 ):
     datasets_list = get_datasets(datasets=datasets)
     print(f"Model type: {model_type}")

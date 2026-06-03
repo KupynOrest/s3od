@@ -3,9 +3,6 @@ import torch
 import numpy as np
 from pathlib import Path
 
-import sys
-sys.path.insert(0, str(Path(__file__).parent.parent / "synth_sod"))
-
 from model_training.model import DPTSegmentation
 
 
@@ -81,7 +78,54 @@ def verify_model(original_model, traced_model, num_tests=10):
         return False
 
 
-def export_checkpoint(checkpoint_path: str, output_path: str):
+def verify_exported_checkpoint(original_checkpoint_path: str, exported_checkpoint_path: str) -> bool:
+    """
+    Verify the exported checkpoint is a lossless extraction of the original.
+
+    The export is a deterministic key-stripping operation, so correctness is fully
+    determined by comparing both state dicts directly — no model re-instantiation
+    needed (which would break when the encoder's internal key structure changes
+    across transformers versions).
+    """
+    print("\nVerifying exported checkpoint against original...")
+
+    original_ckpt = torch.load(original_checkpoint_path, map_location='cpu', weights_only=False)
+    exported_ckpt = torch.load(exported_checkpoint_path, map_location='cpu', weights_only=False)
+
+    original_state = {
+        k[len('model.'):]: v
+        for k, v in original_ckpt['state_dict'].items()
+        if k.startswith('model.')
+    }
+    exported_state = exported_ckpt['state_dict']
+
+    orig_keys = set(original_state.keys())
+    exp_keys = set(exported_state.keys())
+    missing = orig_keys - exp_keys
+    extra = exp_keys - orig_keys
+    if missing:
+        print(f"  ✗ Keys in original missing from export ({len(missing)}): {sorted(missing)[:5]} ...")
+        return False
+    if extra:
+        print(f"  ✗ Extra keys in export not in original ({len(extra)}): {sorted(extra)[:5]} ...")
+        return False
+    print(f"  ✓ Key coverage: {len(orig_keys)} keys match exactly")
+
+    mismatched = []
+    for k in orig_keys:
+        orig_t = original_state[k].float()
+        exp_t = exported_state[k].float()
+        if orig_t.shape != exp_t.shape or not torch.equal(orig_t, exp_t):
+            mismatched.append(k)
+    if mismatched:
+        print(f"  ✗ Weight mismatches in {len(mismatched)} tensors: {mismatched[:3]} ...")
+        return False
+
+    print(f"  ✓ All {len(orig_keys)} tensors are bit-identical")
+    return True
+
+
+def export_checkpoint(checkpoint_path: str, output_path: str, verify: bool = True):
     """
     Export a clean checkpoint for inference (recommended approach).
     
@@ -98,8 +142,8 @@ def export_checkpoint(checkpoint_path: str, output_path: str):
     # Extract only the model weights (remove Lightning metadata)
     if 'state_dict' in checkpoint:
         state_dict = {
-            k.replace('model.', ''): v 
-            for k, v in checkpoint['state_dict'].items() 
+            k[len('model.'):]: v
+            for k, v in checkpoint['state_dict'].items()
             if k.startswith('model.')
         }
         clean_checkpoint = {'state_dict': state_dict}
@@ -111,11 +155,12 @@ def export_checkpoint(checkpoint_path: str, output_path: str):
     
     file_size = Path(output_path).stat().st_size / (1024 * 1024)
     print(f"Checkpoint saved successfully! Size: {file_size:.2f} MB")
-    
-    print("\nVerifying checkpoint can be loaded...")
-    test_load = torch.load(output_path, map_location='cpu')
-    print(f"✓ Checkpoint loads successfully!")
-    print(f"  Contains {len(test_load.get('state_dict', test_load))} parameters")
+    print(f"  Contains {len(clean_checkpoint.get('state_dict', clean_checkpoint))} parameters")
+
+    if verify and 'state_dict' in checkpoint:
+        if not verify_exported_checkpoint(checkpoint_path, output_path):
+            print("\n✗ Verification FAILED — exported checkpoint differs from original!")
+            return False
     
     return True
 
@@ -222,7 +267,8 @@ Recommendation:
     if args.format == "checkpoint":
         export_checkpoint(
             checkpoint_path=args.checkpoint,
-            output_path=args.output
+            output_path=args.output,
+            verify=not args.no_verify,
         )
     else:  # torchscript
         export_model_torchscript(
